@@ -1,0 +1,37 @@
+{
+  "name": "@deepgram/bun-flux",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Real-time transcription with turn detection using Deepgram Flux API (Bun)",
+  "main": "server.ts",
+  "scripts": {
+    "start": "bun run server.ts",
+    "start-backend": "bun --watch run server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepgram-starters/bun-flux.git"
+  },
+  "keywords": [
+    "speech-to-text",
+    "deepgram",
+    "streaming",
+    "flux",
+    "turn-detection",
+    "bun",
+    "typescript"
+  ],
+  "author": "Deepgram DX Team <devrel@deepgram.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/deepgram-starters/bun-flux/issues"
+  },
+  "homepage": "https://github.com/deepgram-starters/bun-flux#readme",
+  "dependencies": {
+    "@iarna/toml": "2.2.5",
+    "jsonwebtoken": "9.0.2"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "9.0.9"
+  }
+}
