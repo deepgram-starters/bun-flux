@@ -6,6 +6,7 @@ repository = "https://github.com/deepgram-starters/bun-flux"
 useCase = "flux"
 language = "typescript"
 framework = "bun"
+sdk = "@deepgram/sdk"
 tags = ["flux", "streaming", "speech-to-text", "real-time", "turn-detection", "bun", "typescript"]
 
 [check]
