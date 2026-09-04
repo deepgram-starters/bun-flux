@@ -51,6 +51,8 @@ const CONFIG: ServerConfig = {
 };
 
 const RESERVED_CLOSE_CODES = [1004, 1005, 1006, 1015];
+const MAX_PENDING_MESSAGES = 128;
+const MAX_PENDING_BYTES = 512 * 1024;
 
 function getSafeCloseCode(code: number | undefined): number {
   return typeof code === "number" && code >= 1000 && code <= 4999 && !RESERVED_CLOSE_CODES.includes(code)
@@ -119,6 +121,8 @@ interface WsData {
   dgReady: boolean;
   /** Browser frames received before the Deepgram socket opened. */
   pending: Array<{ binary: boolean; data: any }>;
+  pendingBytes: number;
+  pendingOverflowed: boolean;
   clientMessageCount: number;
   deepgramMessageCount: number;
 }
@@ -175,6 +179,39 @@ function buildFluxOptions(queryParams: URLSearchParams): Record<string, unknown>
   if (keyterms.length) options.keyterm = keyterms;
 
   return options;
+}
+
+function queuePending(ws: ServerWebSocket<WsData>, data: WsData["pending"][number], bytes: number): boolean {
+  if (ws.data.pendingOverflowed) return false;
+  if (
+    ws.data.pending.length >= MAX_PENDING_MESSAGES ||
+    ws.data.pendingBytes + bytes > MAX_PENDING_BYTES
+  ) {
+    ws.data.pending = [];
+    ws.data.pendingBytes = 0;
+    ws.data.pendingOverflowed = true;
+    ws.close(1009, "Deepgram connection is not ready");
+    return false;
+  }
+  ws.data.pending.push(data);
+  ws.data.pendingBytes += bytes;
+  return true;
+}
+
+function dispatchFluxControl(dgConn: any, msg: any): void {
+  switch (msg?.type) {
+    case "CloseStream":
+      dgConn.sendCloseStream({ type: "CloseStream" });
+      break;
+    case "ForceEndTurn":
+      dgConn.sendForceEndTurn(msg);
+      break;
+    case "Configure":
+      dgConn.sendConfigure(msg);
+      break;
+    default:
+      console.warn("Ignoring unknown client control message type:", msg?.type);
+  }
 }
 
 /**
@@ -288,6 +325,8 @@ const server = Bun.serve<WsData>({
           dgConn: null,
           dgReady: false,
           pending: [],
+          pendingBytes: 0,
+          pendingOverflowed: false,
           clientMessageCount: 0,
           deepgramMessageCount: 0,
         },
@@ -404,16 +443,19 @@ const server = Bun.serve<WsData>({
           try {
             if (item.binary) {
               dgConn.sendMedia(item.data);
-            } else if (item.data?.type === "CloseStream") {
-              dgConn.sendCloseStream({ type: "CloseStream" });
+            } else {
+              dispatchFluxControl(dgConn, item.data);
             }
           } catch (error) {
             console.error("Failed to flush buffered frame to Deepgram:", error);
           }
         }
         ws.data.pending = [];
+        ws.data.pendingBytes = 0;
       } catch (error) {
         console.error("Deepgram connection did not open:", error);
+        ws.data.pending = [];
+        ws.data.pendingBytes = 0;
         try {
           ws.close(1011, "Deepgram connection failed to open");
         } catch {
@@ -444,7 +486,7 @@ const server = Bun.serve<WsData>({
       // Binary frames are audio — stream them to Deepgram via sendMedia.
       if (isBinary) {
         if (!ws.data.dgReady) {
-          ws.data.pending.push({ binary: true, data: message });
+          queuePending(ws, { binary: true, data: message }, message.byteLength);
           return;
         }
         try {
@@ -465,15 +507,11 @@ const server = Bun.serve<WsData>({
         return;
       }
       if (!ws.data.dgReady) {
-        ws.data.pending.push({ binary: false, data: msg });
+        queuePending(ws, { binary: false, data: msg }, new TextEncoder().encode(message as string).byteLength);
         return;
       }
       try {
-        if (msg?.type === "CloseStream") {
-          dgConn?.sendCloseStream({ type: "CloseStream" });
-        } else {
-          console.warn("Ignoring unknown client control message type:", msg?.type);
-        }
+        dispatchFluxControl(dgConn, msg);
       } catch (error) {
         console.error("Failed to forward control message to Deepgram:", error);
       }
@@ -491,6 +529,8 @@ const server = Bun.serve<WsData>({
       } catch {
         // already closed
       }
+      ws.data.pending = [];
+      ws.data.pendingBytes = 0;
     },
   },
 });
