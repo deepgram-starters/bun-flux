@@ -6,7 +6,8 @@
   "main": "server.ts",
   "scripts": {
     "start": "bun run server.ts",
-    "start-backend": "bun --watch run server.ts"
+    "start-backend": "bun --watch run server.ts",
+    "test": "bun test ./test"
   },
   "repository": {
     "type": "git",
