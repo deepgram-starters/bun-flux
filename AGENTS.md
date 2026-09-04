@@ -154,6 +154,7 @@ The frontend is a git submodule from `deepgram-starters/flux-html`. To modify:
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
 | `DEEPGRAM_API_KEY` | Yes | — | Deepgram API key |
+| `DEEPGRAM_BASE_URL` | No | production endpoint | WebSocket endpoint override for non-production Flux environments, such as `wss://api.staging.deepgram.com` |
 | `PORT` | No | `8081` | Backend server port |
 | `HOST` | No | `0.0.0.0` | Backend bind address |
 | `SESSION_SECRET` | No | — | JWT signing secret (production) |
