@@ -50,6 +50,14 @@ const CONFIG: ServerConfig = {
   host: process.env.HOST || "0.0.0.0",
 };
 
+const RESERVED_CLOSE_CODES = [1004, 1005, 1006, 1015];
+
+function getSafeCloseCode(code: number | undefined): number {
+  return typeof code === "number" && code >= 1000 && code <= 4999 && !RESERVED_CLOSE_CODES.includes(code)
+    ? code
+    : 1000;
+}
+
 // ============================================================================
 // DEEPGRAM SDK CLIENT
 // ============================================================================
@@ -378,10 +386,10 @@ const server = Bun.serve<WsData>({
       });
 
       // Handle Deepgram connection close
-      dgConn.on("close", () => {
-        console.log("Deepgram connection closed");
+      dgConn.on("close", (event: { code?: number; reason?: string }) => {
+        console.log(`Deepgram connection closed: ${event?.code ?? 1000} ${event?.reason ?? ""}`);
         try {
-          ws.close(1000, "Deepgram connection closed");
+          ws.close(getSafeCloseCode(event?.code), event?.reason || undefined);
         } catch {
           // Client may already be closed
         }
