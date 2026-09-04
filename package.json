@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/deepgram-starters/bun-flux#readme",
   "dependencies": {
-    "@deepgram/sdk": "^5.7.0",
+    "@deepgram/sdk": "^5.9.0",
     "@iarna/toml": "2.2.5",
     "jsonwebtoken": "9.0.2"
   },

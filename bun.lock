@@ -5,7 +5,7 @@
     "": {
       "name": "@deepgram/bun-flux",
       "dependencies": {
-        "@deepgram/sdk": "^5.7.0",
+        "@deepgram/sdk": "^5.9.0",
         "@iarna/toml": "2.2.5",
         "jsonwebtoken": "9.0.2",
       },
@@ -15,7 +15,7 @@
     },
   },
   "packages": {
-    "@deepgram/sdk": ["@deepgram/sdk@5.7.0", "", { "dependencies": { "ws": "^8.20.0" } }, "sha512-A0uIaLukO+8JXUuT+iDE5ts8PCmdLCxDajawghFHLDEnFvA8dYYecCFxqFaTWgjJcJil0CtgIHKzm23E4RVqOA=="],
+    "@deepgram/sdk": ["@deepgram/sdk@5.9.0", "", { "dependencies": { "ws": "^8.20.0" } }, "sha512-MZge3ClQnUbFb+3cz93WI+aljPo8xPVOH5aI/oQGZNuN7JbNJBkmtXnv0Y/3ocFyqmAJltrF6U8t0gpdXzNXUw=="],
 
     "@iarna/toml": ["@iarna/toml@2.2.5", "", {}, "sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg=="],
 
